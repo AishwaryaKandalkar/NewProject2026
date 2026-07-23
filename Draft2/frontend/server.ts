@@ -8,6 +8,8 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import PDFDocument from "pdfkit";
+import ExcelJS from "exceljs";
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +33,191 @@ const ai = new GoogleGenAI({
 });
 
 async function startServer() {
+  const reportCatalog = [
+    {
+      id: "rep-weekly",
+      title: "Weekly Opportunity Report",
+      description: "Aggregated corporate origination intelligence covering newly flagged European candidates and rating upgrades.",
+    },
+    {
+      id: "rep-sector",
+      title: "Sector Distribution & Capex Analysis",
+      description: "Detailed funding product mix and leverage ratios analyzed for Industrials, Tech, and Energy corporations.",
+    },
+    {
+      id: "rep-country",
+      title: "Country Sovereign Arbitrage Briefing",
+      description: "Sovereign yield movements and swap-arbitrage pricing windows monitored for France, Germany, and Benelux.",
+    },
+    {
+      id: "rep-watchlist",
+      title: "Watchlist Engagement Brief",
+      description: "Diagnostic report mapping coverage notes, scheduled outreach actions, and relationship gaps.",
+    }
+  ] as const;
+
+  const formatReportPayload = (reportId: string) => {
+    const report = reportCatalog.find((item) => item.id === reportId);
+    if (!report) {
+      throw new Error("Unknown report requested");
+    }
+
+    const totalFundingNeed = activeIssuers.reduce((sum, issuer) => sum + (issuer.fundingNeed ?? 0), 0);
+    const averageScore = activeIssuers.length
+      ? Math.round(activeIssuers.reduce((sum, issuer) => sum + (issuer.opportunityScore ?? 0), 0) / activeIssuers.length)
+      : 0;
+    const topIssuer = [...activeIssuers].sort((a, b) => (b.opportunityScore ?? 0) - (a.opportunityScore ?? 0))[0];
+    const priorityAlerts = activeAlerts.filter((alert) => alert.urgency === "HIGH" || alert.urgency === "MEDIUM");
+    const generatedAt = new Date().toISOString();
+
+    const metrics = [
+      { label: "Report", value: report.title },
+      { label: "Generated At", value: generatedAt },
+      { label: "Total Issuers", value: String(activeIssuers.length) },
+      { label: "Average Opportunity Score", value: String(averageScore) },
+      { label: "Total Funding Need", value: `${totalFundingNeed} EUR` },
+      { label: "Top Issuer", value: topIssuer?.name ?? "N/A" },
+      { label: "Priority Alerts", value: String(priorityAlerts.length) },
+      { label: "Top Alert", value: priorityAlerts[0]?.title ?? "N/A" },
+    ];
+
+    const sectorRows = [...new Map(activeIssuers.map((issuer) => [issuer.sector ?? "Unknown", { sector: issuer.sector ?? "Unknown", count: 0, funding: 0, score: 0 }])).entries()].map(([sector]) => sector);
+    const sectorSummary = new Map<string, { count: number; funding: number; totalScore: number }>();
+    activeIssuers.forEach((issuer) => {
+      const sector = issuer.sector ?? "Unknown";
+      const current = sectorSummary.get(sector) ?? { count: 0, funding: 0, totalScore: 0 };
+      current.count += 1;
+      current.funding += issuer.fundingNeed ?? 0;
+      current.totalScore += issuer.opportunityScore ?? 0;
+      sectorSummary.set(sector, current);
+    });
+
+    const countrySummary = new Map<string, { count: number; totalScore: number }>();
+    activeIssuers.forEach((issuer) => {
+      const country = issuer.country ?? "Unknown";
+      const current = countrySummary.get(country) ?? { count: 0, totalScore: 0 };
+      current.count += 1;
+      current.totalScore += issuer.opportunityScore ?? 0;
+      countrySummary.set(country, current);
+    });
+
+    const watchlistRows = activeIssuers
+      .filter((issuer) => issuer.priority === "HIGH" || issuer.priority === "MEDIUM")
+      .slice(0, 10)
+      .map((issuer) => ({
+        issuer: issuer.name,
+        priority: issuer.priority ?? "N/A",
+        banker: issuer.assignedBanker ?? "N/A",
+        nextAction: issuer.nextAction ?? "N/A",
+      }));
+
+    return {
+      report,
+      generatedAt,
+      metrics,
+      sectorRows,
+      sectorSummary,
+      countrySummary,
+      watchlistRows,
+    };
+  };
+
+  const buildPdfBuffer = async (reportId: string, format: string) => {
+    const payload = formatReportPayload(reportId);
+    const doc = new PDFDocument({ margin: 40 });
+    const chunks: Buffer[] = [];
+
+    doc.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+    return await new Promise<Buffer>((resolve, reject) => {
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+      doc.on("error", reject);
+
+      doc.fontSize(18).fillColor("#0f172a").text(`${payload.report.title}`, { align: "center" });
+      doc.moveDown(0.4);
+      doc.fontSize(10).fillColor("#475569").text(`Generated: ${payload.generatedAt}`);
+      doc.moveDown(1);
+      doc.fontSize(12).fillColor("#0f172a").text(`Format: ${format}`);
+      doc.moveDown(0.8);
+
+      payload.metrics.forEach((metric) => {
+        doc.fontSize(10).fillColor("#0f172a").text(`${metric.label}: ${metric.value}`);
+      });
+
+      if (reportId === "rep-sector") {
+        doc.moveDown(1);
+        doc.fontSize(12).fillColor("#0f172a").text("Sector Summary");
+        [...payload.sectorSummary.entries()].forEach(([sector, summary]) => {
+          const avgScore = Math.round(summary.totalScore / summary.count);
+          doc.fontSize(9).fillColor("#334155").text(`- ${sector}: ${summary.count} issuers, funding ${summary.funding} EUR, avg score ${avgScore}`);
+        });
+      }
+
+      if (reportId === "rep-country") {
+        doc.moveDown(1);
+        doc.fontSize(12).fillColor("#0f172a").text("Country Summary");
+        [...payload.countrySummary.entries()].forEach(([country, summary]) => {
+          const avgScore = Math.round(summary.totalScore / summary.count);
+          doc.fontSize(9).fillColor("#334155").text(`- ${country}: ${summary.count} issuers, avg score ${avgScore}`);
+        });
+      }
+
+      if (reportId === "rep-watchlist") {
+        doc.moveDown(1);
+        doc.fontSize(12).fillColor("#0f172a").text("Watchlist Priority Actions");
+        payload.watchlistRows.forEach((row) => {
+          doc.fontSize(9).fillColor("#334155").text(`- ${row.issuer}: ${row.priority}, banker ${row.banker}, next action ${row.nextAction}`);
+        });
+      }
+
+      doc.end();
+    });
+  };
+
+  const buildExcelBuffer = async (reportId: string) => {
+    const payload = formatReportPayload(reportId);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Report");
+
+    worksheet.columns = [
+      { header: "Label", key: "label", width: 32 },
+      { header: "Value", key: "value", width: 48 },
+    ];
+
+    payload.metrics.forEach((metric) => {
+      worksheet.addRow({ label: metric.label, value: metric.value });
+    });
+
+    if (reportId === "rep-sector") {
+      worksheet.addRow([]);
+      worksheet.addRow({ label: "Sector Summary", value: "" });
+      [...payload.sectorSummary.entries()].forEach(([sector, summary]) => {
+        const avgScore = Math.round(summary.totalScore / summary.count);
+        worksheet.addRow({ label: sector, value: `${summary.count} issuers | funding ${summary.funding} EUR | avg score ${avgScore}` });
+      });
+    }
+
+    if (reportId === "rep-country") {
+      worksheet.addRow([]);
+      worksheet.addRow({ label: "Country Summary", value: "" });
+      [...payload.countrySummary.entries()].forEach(([country, summary]) => {
+        const avgScore = Math.round(summary.totalScore / summary.count);
+        worksheet.addRow({ label: country, value: `${summary.count} issuers | avg score ${avgScore}` });
+      });
+    }
+
+    if (reportId === "rep-watchlist") {
+      worksheet.addRow([]);
+      worksheet.addRow({ label: "Watchlist", value: "" });
+      payload.watchlistRows.forEach((row) => {
+        worksheet.addRow({ label: row.issuer, value: `${row.priority} | ${row.banker} | ${row.nextAction}` });
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return buffer as unknown as Buffer;
+  };
+
   const app = express();
   const PORT = 3000;
 
@@ -156,6 +343,53 @@ async function startServer() {
     });
 
     res.json({ success: true, issuer: fullIssuer });
+  });
+
+  // Report generation endpoint backed by current in-memory issuer and market data
+  app.post("/api/reports/generate", async (req, res) => {
+    try {
+      const { reportId, format } = req.body as { reportId?: string; format?: string };
+
+      if (!reportId || !format) {
+        return res.status(400).json({ error: "Missing reportId or format" });
+      }
+
+      const normalizedFormat = format.toLowerCase();
+      const extensionMap: Record<string, string> = {
+        pdf: "pdf",
+        ppt: "pptx",
+        excel: "xlsx",
+      };
+
+      if (!(normalizedFormat in extensionMap)) {
+        return res.status(400).json({ error: "Unsupported report format" });
+      }
+
+      const contentTypeMap: Record<string, string> = {
+        pdf: "application/pdf",
+        ppt: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        excel: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      };
+
+      let buffer: Buffer;
+      if (normalizedFormat === "pdf") {
+        buffer = await buildPdfBuffer(reportId, format);
+      } else {
+        buffer = await buildExcelBuffer(reportId);
+      }
+
+      const base64 = buffer.toString("base64");
+      const extension = extensionMap[normalizedFormat];
+
+      return res.json({
+        filename: `SIG_${reportId}_${new Date().toISOString().slice(0, 10)}.${extension}`,
+        contentType: contentTypeMap[normalizedFormat],
+        base64,
+      });
+    } catch (error: any) {
+      console.error("Report generation error:", error);
+      return res.status(500).json({ error: "Report generation failed", details: error.message });
+    }
   });
 
   // Copilot Assistant Endpoint (Integrated with Gemini 3.5 Flash server-side)
