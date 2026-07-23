@@ -3,23 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
-import { 
-  FileText, 
-  Download, 
-  Clock, 
-  CheckCircle2, 
+import { useState } from "react";
+import {
+  FileText,
+  Download,
+  CheckCircle2,
   Loader2,
   Calendar,
   Layers,
-  FileCheck,
-  Percent,
-  Play
 } from "lucide-react";
 
 export default function Reports() {
-  const [generatingId, setGeneratingId] = useState<string | null>(null);
-  const [completedId, setCompletedId] = useState<string | null>(null);
+  const [generatingKey, setGeneratingKey] = useState<string | null>(null);
+  const [completedKeys, setCompletedKeys] = useState<string[]>([]);
 
   const reportsList = [
     {
@@ -56,26 +52,53 @@ export default function Reports() {
     }
   ];
 
-  const handleGenerate = (id: string, format: string) => {
-    setGeneratingId(id);
-    setCompletedId(null);
+  const handleGenerate = async (id: string, format: string) => {
+    const buttonKey = `${id}-${format}`;
+    setGeneratingKey(buttonKey);
+    setCompletedKeys((prev) => prev.filter((key) => !key.startsWith(`${id}-`)));
 
-    // Simulate document compiling
-    setTimeout(() => {
-      setGeneratingId(null);
-      setCompletedId(id);
-      
-      // Simulate download link trigger
-      const csvContent = "data:text/csv;charset=utf-8,Report_Name,Generated_At,Format,Status\n" 
-        + `${reportsList.find(r => r.id === id)?.title},${new Date().toISOString()},${format},SUCCESS`;
-      const encodedUri = encodeURI(csvContent);
+    try {
+      const response = await fetch("/api/reports/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ reportId: id, format }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate report");
+      }
+
+      const payload = await response.json() as {
+        filename: string;
+        contentType: string;
+        base64: string;
+      };
+
+      const binary = atob(payload.base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+      }
+
+      const blob = new Blob([bytes], { type: payload.contentType });
+      const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `SIG_${id}_${new Date().toISOString().slice(0,10)}.${format.toLowerCase() === "pdf" ? "pdf" : "xlsx"}`);
+
+      link.href = objectUrl;
+      link.download = payload.filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }, 2000);
+      URL.revokeObjectURL(objectUrl);
+
+      setCompletedKeys((prev) => [...prev.filter((key) => !key.startsWith(`${id}-`)), buttonKey]);
+    } catch (error) {
+      console.error("Report generation failed", error);
+    } finally {
+      setGeneratingKey(null);
+    }
   };
 
   return (
@@ -92,9 +115,6 @@ export default function Reports() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4" id="reports-grid">
         {reportsList.map(rep => {
-          const isGenerating = generatingId === rep.id;
-          const isCompleted = completedId === rep.id;
-
           return (
             <div 
               key={rep.id}
@@ -115,28 +135,34 @@ export default function Reports() {
                 </div>
 
                 <div className="flex gap-1.5" id={`report-actions-${rep.id}`}>
-                  {rep.formats.map(fmt => (
-                    <button
-                      key={fmt}
-                      disabled={isGenerating}
-                      onClick={() => handleGenerate(rep.id, fmt)}
-                      className="flex-1 py-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-300 text-[10px] font-mono font-semibold rounded transition flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" /> COMPILING...
-                        </>
-                      ) : isCompleted ? (
-                        <>
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> DOWNLOAD {fmt}
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-3.5 w-3.5 text-sky-400" /> GENERATE {fmt}
-                        </>
-                      )}
-                    </button>
-                  ))}
+                  {rep.formats.map(fmt => {
+                    const buttonKey = `${rep.id}-${fmt}`;
+                    const isGenerating = generatingKey === buttonKey;
+                    const isCompleted = completedKeys.includes(buttonKey);
+
+                    return (
+                      <button
+                        key={fmt}
+                        disabled={isGenerating}
+                        onClick={() => handleGenerate(rep.id, fmt)}
+                        className="flex-1 py-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-300 text-[10px] font-mono font-semibold rounded transition flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" /> COMPILING...
+                          </>
+                        ) : isCompleted ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> DOWNLOAD {fmt}
+                          </>
+                        ) : (
+                          <>
+                            <Download className="h-3.5 w-3.5 text-sky-400" /> GENERATE {fmt}
+                          </>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

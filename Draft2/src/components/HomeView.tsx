@@ -251,8 +251,8 @@ export default function HomeView({ issuers, alerts, actions, onSelectIssuer, onN
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="month" stroke="#64748b" fontSize={10} fontClassName="font-mono" tickLine={false} />
-                <YAxis stroke="#64748b" fontSize={10} fontClassName="font-mono" tickLine={false} />
+                <XAxis dataKey="month" stroke="#64748b" fontSize={10} className="font-mono" tickLine={false} />
+                <YAxis stroke="#64748b" fontSize={10} className="font-mono" tickLine={false} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: "#0f172a", border: "1px solid #334155" }} 
                   labelStyle={{ fontFamily: "monospace", color: "#94a3b8" }}
