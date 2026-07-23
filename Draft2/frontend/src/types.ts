@@ -60,21 +60,39 @@ export interface ScoreDetail {
   reasoning: string;
 }
 
-export interface GraphNode {
-  id: string;
-  label: string;
-  type: "issuer" | "banker" | "deal" | "investor" | "peer" | "sector" | "rating" | "debt" | "event";
-  group?: string;
-  x?: number;
-  y?: number;
+export interface GraphNode{
+
+    id:string;
+
+    label:string;
+
+    type:string;
+
+    x:number;
+
+    y:number;
+
+    sector:string;
+
+    country:string;
+
+    rating:string;
+
+    ticker:string;
+
+    description:string;
+
 }
 
-export interface GraphLink {
-  source: string | GraphNode;
-  target: string | GraphNode;
-  label: string;
-}
+export interface GraphLink{
 
+    source:string;
+
+    target:string;
+
+    label:string;
+
+}
 export interface MarketIndicator {
   id: string;
   name: string;

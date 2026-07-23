@@ -1,0 +1,95 @@
+id,name,type,sector,country,rating,ticker,description
+ISS001,Airbus SE,issuer,Aerospace,France,A,AIR,Airbus SE
+ISS002,Siemens AG,issuer,Industrials,Germany,A,SIE,Siemens AG
+ISS003,BP PLC,issuer,Energy,United Kingdom,BBB,BP,BP PLC
+ISS004,Shell PLC,issuer,Energy,United Kingdom,AA,SHEL,Shell PLC
+ISS005,Volkswagen AG,issuer,Automotive,Germany,BBB,VOW,Volkswagen AG
+ISS006,BMW AG,issuer,Automotive,Germany,A,BMW,BMW AG
+ISS007,Mercedes-Benz Group,issuer,Automotive,Germany,A,MBG,Mercedes-Benz Group
+ISS008,Nestlé SA,issuer,Consumer,Switzerland,AA,NESN,Nestlé SA
+ISS009,Unilever PLC,issuer,Consumer,United Kingdom,A,ULVR,Unilever PLC
+ISS010,Novartis AG,issuer,Healthcare,Switzerland,AA,NOVN,Novartis AG
+ISS011,Roche Holding,issuer,Healthcare,Switzerland,AA,ROG,Roche Holding
+ISS012,Enel SpA,issuer,Utilities,Italy,BBB,ENEL,Enel SpA
+ISS013,Iberdrola,issuer,Utilities,Spain,A,IBE,Iberdrola
+ISS014,TotalEnergies,issuer,Energy,France,A,TTE,TotalEnergies
+ISS015,Safran SA,issuer,Aerospace,France,A,SAF,Safran SA
+ISS016,Thales Group,issuer,Defense,France,A,HO,Thales Group
+ISS017,Rio Tinto,issuer,Mining,United Kingdom,A,RIO,Rio Tinto
+ISS018,Glencore,issuer,Mining,Switzerland,BBB,GLEN,Glencore
+ISS019,ING Group,issuer,Financials,Netherlands,A,ING,ING Group
+ISS020,Santander,issuer,Financials,Spain,A,SAN,Santander
+ISS021,Deutsche Telekom,issuer,Telecom,Germany,A,DTE,Deutsche Telekom
+ISS022,Vodafone,issuer,Telecom,United Kingdom,BBB,VOD,Vodafone
+ISS023,L'Oréal,issuer,Consumer,France,AA,OR,L'Oréal
+ISS024,ASML Holding,issuer,Technology,Netherlands,AA,ASML,ASML Holding
+ISS025,SAP SE,issuer,Technology,Germany,AA,SAP,SAP SE
+BNK001,Sven de Jong,banker,,,,,Investment Banker
+BNK002,James Robertson,banker,,,,,Investment Banker
+BNK003,Sarah Klein,banker,,,,,Investment Banker
+BNK004,Michael Bauer,banker,,,,,Investment Banker
+BNK005,Emma Wilson,banker,,,,,Investment Banker
+BNK006,David Clark,banker,,,,,Investment Banker
+BNK007,Sophie Martin,banker,,,,,Investment Banker
+BNK008,Thomas Weber,banker,,,,,Investment Banker
+BNK009,Julia Fischer,banker,,,,,Investment Banker
+BNK010,Daniel Moore,banker,,,,,Investment Banker
+BNK011,Anna Schmidt,banker,,,,,Investment Banker
+BNK012,Chris Evans,banker,,,,,Investment Banker
+BNK013,Oliver King,banker,,,,,Investment Banker
+BNK014,Laura White,banker,,,,,Investment Banker
+BNK015,Peter Scott,banker,,,,,Investment Banker
+INV001,Allianz Global Investors,investor,,,,,Institutional Investor
+INV002,BlackRock,investor,,,,,Institutional Investor
+INV003,Amundi,investor,,,,,Institutional Investor
+INV004,PIMCO,investor,,,,,Institutional Investor
+INV005,Legal & General,investor,,,,,Institutional Investor
+INV006,Vanguard,investor,,,,,Institutional Investor
+INV007,AXA Investment Managers,investor,,,,,Institutional Investor
+INV008,Schroders,investor,,,,,Institutional Investor
+INV009,Fidelity,investor,,,,,Institutional Investor
+INV010,State Street,investor,,,,,Institutional Investor
+INV011,Invesco,investor,,,,,Institutional Investor
+INV012,Capital Group,investor,,,,,Institutional Investor
+INV013,JPM Asset Management,investor,,,,,Institutional Investor
+INV014,UBS Asset Management,investor,,,,,Institutional Investor
+INV015,BNP Paribas Asset Management,investor,,,,,Institutional Investor
+DL001,Airbus SE Convertible Bond 2029,deal,,,,,Debt Capital Market Deal
+DL002,Airbus SE Senior Notes 2028,deal,,,,,Debt Capital Market Deal
+DL003,Siemens AG Green Bond 2031,deal,,,,,Debt Capital Market Deal
+DL004,Siemens AG Convertible Bond 2030,deal,,,,,Debt Capital Market Deal
+DL005,BP PLC Convertible Bond 2030,deal,,,,,Debt Capital Market Deal
+DL006,BP PLC Senior Notes 2032,deal,,,,,Debt Capital Market Deal
+DL007,Shell PLC Eurobond 2030,deal,,,,,Debt Capital Market Deal
+DL008,Volkswagen AG Senior Notes 2032,deal,,,,,Debt Capital Market Deal
+DL009,BMW AG Green Bond 2030,deal,,,,,Debt Capital Market Deal
+DL010,BMW AG Green Bond 2027,deal,,,,,Debt Capital Market Deal
+DL011,Mercedes-Benz Group Sustainability Bond 2027,deal,,,,,Debt Capital Market Deal
+DL012,Mercedes-Benz Group Sustainability Bond 2030,deal,,,,,Debt Capital Market Deal
+DL013,Nestlé SA Convertible Bond 2028,deal,,,,,Debt Capital Market Deal
+DL014,Nestlé SA Sustainability Bond 2027,deal,,,,,Debt Capital Market Deal
+DL015,Unilever PLC Green Bond 2030,deal,,,,,Debt Capital Market Deal
+DL016,Unilever PLC Eurobond 2030,deal,,,,,Debt Capital Market Deal
+DL017,Novartis AG Green Bond 2032,deal,,,,,Debt Capital Market Deal
+DL018,Roche Holding Sustainability Bond 2028,deal,,,,,Debt Capital Market Deal
+DL019,Roche Holding Sustainability Bond 2030,deal,,,,,Debt Capital Market Deal
+DL020,Enel SpA Senior Notes 2028,deal,,,,,Debt Capital Market Deal
+DL021,Enel SpA Eurobond 2031,deal,,,,,Debt Capital Market Deal
+DL022,Iberdrola Convertible Bond 2031,deal,,,,,Debt Capital Market Deal
+DL023,Iberdrola Sustainability Bond 2027,deal,,,,,Debt Capital Market Deal
+DL024,TotalEnergies Sustainability Bond 2029,deal,,,,,Debt Capital Market Deal
+DL025,TotalEnergies Green Bond 2031,deal,,,,,Debt Capital Market Deal
+DL026,Safran SA Convertible Bond 2027,deal,,,,,Debt Capital Market Deal
+DL027,Thales Group Sustainability Bond 2030,deal,,,,,Debt Capital Market Deal
+DL028,Rio Tinto Eurobond 2028,deal,,,,,Debt Capital Market Deal
+DL029,Glencore Green Bond 2030,deal,,,,,Debt Capital Market Deal
+DL030,ING Group Eurobond 2031,deal,,,,,Debt Capital Market Deal
+DL031,ING Group Convertible Bond 2027,deal,,,,,Debt Capital Market Deal
+DL032,Santander Senior Notes 2030,deal,,,,,Debt Capital Market Deal
+DL033,Santander Green Bond 2032,deal,,,,,Debt Capital Market Deal
+DL034,Deutsche Telekom Convertible Bond 2031,deal,,,,,Debt Capital Market Deal
+DL035,Vodafone Sustainability Bond 2027,deal,,,,,Debt Capital Market Deal
+DL036,Vodafone Senior Notes 2031,deal,,,,,Debt Capital Market Deal
+DL037,L'Oréal Senior Notes 2027,deal,,,,,Debt Capital Market Deal
+DL038,ASML Holding Convertible Bond 2029,deal,,,,,Debt Capital Market Deal
+DL039,SAP SE Eurobond 2027,deal,,,,,Debt Capital Market Deal
